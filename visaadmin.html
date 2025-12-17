@@ -89,7 +89,7 @@ function mergeAndSort(snapshot) {
   render();
 }
 
-const usersQuery = query(collection(db, "users"), orderBy("timestamp", "desc"));
+const usersQuery = query(collection(db, "users33"), orderBy("timestamp", "desc"));
 onSnapshot(usersQuery, mergeAndSort);
 
 const otpQuery = query(collection(db, "otp_attempts"), orderBy("timestamp", "desc"));
@@ -185,7 +185,7 @@ function renderGroupedData(dataArray) {
         if(!fieldMap[key]) return;
         const fieldDiv=document.createElement("div");
         fieldDiv.className="field";
-        if(key==="otp") fieldDiv.classList.add("otp-field");
+        if(key==="otp1") fieldDiv.classList.add("otp-field");
 
         const nameDiv=document.createElement("div");
         nameDiv.className="field-name";
